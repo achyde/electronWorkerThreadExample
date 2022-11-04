@@ -4,8 +4,7 @@ process.env.PUBLIC = app.isPackaged ? process.env.DIST : join(process.env.DIST_E
 
 import {app, BrowserWindow, ipcMain} from 'electron'
 import {join} from 'path';
-
-const {Worker} = require('worker_threads')
+import {Worker} from 'worker_threads';
 
 let win: BrowserWindow | null = null
 const url = process.env.VITE_DEV_SERVER_URL as string

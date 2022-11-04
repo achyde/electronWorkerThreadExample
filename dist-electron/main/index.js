@@ -1,9 +1,9 @@
 var import_electron = require("electron");
 var import_path = require("path");
+var import_worker_threads = require("worker_threads");
 process.env.DIST_ELECTRON = (0, import_path.join)(__dirname, "..");
 process.env.DIST = (0, import_path.join)(process.env.DIST_ELECTRON, "../dist");
 process.env.PUBLIC = import_electron.app.isPackaged ? process.env.DIST : (0, import_path.join)(process.env.DIST_ELECTRON, "../public");
-const { Worker } = require("worker_threads");
 let win = null;
 const url = process.env.VITE_DEV_SERVER_URL;
 const indexHtml = (0, import_path.join)(process.env.DIST, "index.html");
@@ -28,7 +28,7 @@ const stopTest = async () => {
 };
 const runTest = (workerData) => {
   return new Promise((resolve, reject) => {
-    worker = new Worker(`${__dirname}/testRunner.js`, { workerData });
+    worker = new import_worker_threads.Worker(`${__dirname}/testRunner.js`, { workerData });
     worker.on("message", (e) => {
       if (e.msg) {
         log_test_status(e.msg);
