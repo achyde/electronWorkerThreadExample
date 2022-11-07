@@ -4,8 +4,7 @@ process.env.PUBLIC = app.isPackaged ? process.env.DIST : join(process.env.DIST_E
 
 import {app, BrowserWindow, ipcMain} from 'electron'
 import {join} from 'path';
-
-const {Worker} = require('worker_threads')
+import {Worker} from 'worker_threads';
 
 let win: BrowserWindow | null = null
 const url = process.env.VITE_DEV_SERVER_URL as string
@@ -21,22 +20,24 @@ const log_test_status = (s: string) => {
 const log_julian_time = (s: string) => win.webContents.send("julian_time", s)
 const log_past_messages = () => win.webContents.send("get_log", testLog)
 
-const terminate_worker = async (worker: any) => {
+let worker = null;
+
+const terminate_worker = async () => {
     if (worker) {
         await worker.terminate();
         worker = null;
     }
 };
 
-const stopTest = async (worker: any) => {
+const stopTest = async () => {
     log_test_status("Stopping test.");
-    await terminate_worker(worker);
+    await terminate_worker();
 };
 
 const runTest = (workerData) => {
     return new Promise((resolve, reject) => {
 
-        const worker = new Worker(`${__dirname}/testRunner.js`, {workerData});
+        worker = new Worker(`${__dirname}/testRunner.js`, {workerData});
 
         worker.on('message', (e) => {
             if (e.msg) {
@@ -45,11 +46,8 @@ const runTest = (workerData) => {
             if (e.julian_time) {
                 log_julian_time(e.julian_time);
             }
-            if (e.done) {
-                stopTest(worker);
-            }
         });
-        worker.on('close', () => stopTest(worker).then(() => resolve({done: true})));
+        worker.on('close', () => stopTest().then(() => resolve({done: true})));
         worker.on('error', reject);
         worker.on('exit', (code: number) => {
             if (code !== 0){
@@ -74,10 +72,9 @@ const createWindow = async () => {
     }
 
     ipcMain.on("clear_log", () => testLog = "");
-    ipcMain.on("get_log", () => log_past_messages());
-    ipcMain.on("stop_test", stopTest);
-    ipcMain.on("start_test", async (event, args) => await runTest({runs: args.runs, steps: args.steps}).catch(()=>log_test_status("Caught return from test"))
-        .finally(async () => log_test_status("Test done.")));
+    ipcMain.on("get_log",  () => log_past_messages());
+    ipcMain.on("stop_test", () => stopTest());
+    ipcMain.on("start_test", async (event, args) => await runTest({runs: args.runs, steps: args.steps}).finally(() => log_test_status("Test done.")));
 };
 
 app.on("ready", createWindow);
