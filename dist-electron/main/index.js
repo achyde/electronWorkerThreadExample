@@ -36,9 +36,6 @@ const runTest = (workerData) => {
       if (e.julian_time) {
         log_julian_time(e.julian_time);
       }
-      if (e.done) {
-        stopTest();
-      }
     });
     worker.on("close", () => stopTest().then(() => resolve({ done: true })));
     worker.on("error", reject);
@@ -62,7 +59,7 @@ const createWindow = async () => {
   import_electron.ipcMain.on("clear_log", () => testLog = "");
   import_electron.ipcMain.on("get_log", () => log_past_messages());
   import_electron.ipcMain.on("stop_test", () => stopTest());
-  import_electron.ipcMain.on("start_test", async (event, args) => await runTest({ runs: args.runs, steps: args.steps }).catch(() => log_test_status("Caught return from test")).finally(async () => log_test_status("Test done.")));
+  import_electron.ipcMain.on("start_test", async (event, args) => await runTest({ runs: args.runs, steps: args.steps }).finally(() => log_test_status("Test done.")));
 };
 import_electron.app.on("ready", createWindow);
 

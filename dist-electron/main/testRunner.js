@@ -15,7 +15,6 @@ const runTest = async (runs, steps) => {
     await Promise.resolve(log_test_status("Start of async work")).then(() => log_test_status(`sleep(2000)`)).then(() => sleep(2e3)).then(() => log_test_status(JSON.stringify({ success: true }))).then(() => log_test_status(`Waiting ${secondsToWaitForTest} seconds for test ${i + 1} to finish`)).then(() => sleep(secondsToWaitForTest * 1e3)).then(() => log_test_status(`Finished test ${i + 1}`));
   }
   log_test_status(`End test session`);
-  import_worker_threads.parentPort.postMessage({ done: true });
 };
 runTest(import_worker_threads.workerData.runs, import_worker_threads.workerData.steps).then(() => import_worker_threads.parentPort.close());
 

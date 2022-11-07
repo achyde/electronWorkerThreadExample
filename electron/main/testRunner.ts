@@ -31,7 +31,6 @@ const runTest = async (runs: number, steps: number) => {
             .then(() => log_test_status(`Finished test ${i + 1}`))
     }
     log_test_status(`End test session`);
-    parentPort.postMessage({done:true});
 }
 
 runTest(workerData.runs, workerData.steps).then(() => parentPort.close());
